@@ -19,6 +19,7 @@ namespace CalculatorUITestFramework
         public WindowsElement Header => session.TryFindElementByAccessibilityId("Header");
 
         public CalculatorResults CalculatorResults = new CalculatorResults();
+        public AoTCalculatorPage AoTCalculatorPage = new AoTCalculatorPage();
 
         public void NavigateToScientificCalculator()
         {
@@ -31,6 +32,7 @@ namespace CalculatorUITestFramework
         /// </summary>
         public void ClearAll()
         {
+            AoTCalculatorPage.NavigateToFullViewMode("Scientific");
             string source = session.PageSource;
 
             if (source.Contains("clearEntryButton"))

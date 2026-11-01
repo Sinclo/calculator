@@ -671,17 +671,31 @@ namespace CalculatorUITests
         [Priority(0)]
         public void AoT_EnterExitKeepOnTop()
         {
-            page.StandardAoTCalculatorPage.NavigateToStandardAoTMode();
-            page.StandardAoTCalculatorPage.NavigateToStandardMode();
+            Assert.IsTrue(page.AoTCalculatorPage.IsKeepOnTopButtonPresent());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+        }
+
+        [TestMethod]
+        [Priority(1)]
+        public void AoT_HotkeyEnterExit()
+        {
+            CalculatorApp.EnsureCalculatorHasFocus();
+            CalculatorApp.Window.SendKeys(Keys.Alt + Keys.ArrowUp + Keys.Alt);
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+
+            CalculatorApp.Window.SendKeys(Keys.Alt + Keys.ArrowDown + Keys.Alt);
+            Assert.IsFalse(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+            Assert.AreEqual("Standard", CalculatorApp.GetCalculatorHeaderText());
         }
 
         [TestMethod]
         [Priority(0)]
-        public void AoT_Tootip()
+        public void AoT_Tooltip()
         {
-            Assert.AreEqual("Keep on top (Alt+Up)", page.StandardAoTCalculatorPage.GetAoTToolTipText());
-            page.StandardAoTCalculatorPage.NavigateToStandardAoTMode();
-            Assert.AreEqual("Back to full view (Alt+Down)", page.StandardAoTCalculatorPage.GetAoTToolTipText());
+            Assert.AreEqual("Keep on top (Alt+Up)", page.AoTCalculatorPage.GetAoTToolTipText());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.AreEqual("Back to full view (Alt+Down)", page.AoTCalculatorPage.GetAoTToolTipText());
         }
 
         [TestMethod]
@@ -691,11 +705,11 @@ namespace CalculatorUITests
             page.StandardOperators.NumberPad.Num9Button.Click();
             page.StandardOperators.MinusButton.Click();
             page.StandardOperators.NumberPad.Num3Button.Click();
-            page.StandardAoTCalculatorPage.NavigateToStandardAoTMode();
+            page.AoTCalculatorPage.NavigateToAoTMode();
             CalculatorApp.Window.SendKeys(Keys.Enter);
             CalculatorApp.Window.SendKeys(Keys.Control + "P" + Keys.Control);
             CalculatorApp.Window.SendKeys(Keys.Shift); //Hotkeys such as "Delete" will break without this line
-            page.StandardAoTCalculatorPage.NavigateToStandardMode();
+            page.AoTCalculatorPage.NavigateToFullViewMode("Standard");
             page.MemoryPanel.OpenMemoryPanel();
             Assert.IsNotNull(CalculatorDriver.Instance.CalculatorSession.FindElementByAccessibilityId("MemoryPaneEmpty"));
         }
@@ -707,7 +721,7 @@ namespace CalculatorUITests
             page.StandardOperators.NumberPad.Num3Button.Click();
             page.StandardOperators.PlusButton.Click();
             page.StandardOperators.NumberPad.Num3Button.Click();
-            page.StandardAoTCalculatorPage.NavigateToStandardAoTMode();
+            page.AoTCalculatorPage.NavigateToAoTMode();
             page.StandardOperators.EqualButton.Click();
             CalculatorApp.Window.SendKeys(Keys.Control + "H" + Keys.Control);
             string source = CalculatorDriver.Instance.CalculatorSession.PageSource;
@@ -717,7 +731,7 @@ namespace CalculatorUITests
             }
             else
             {
-                page.StandardAoTCalculatorPage.NavigateToStandardMode();
+                page.AoTCalculatorPage.NavigateToFullViewMode("Standard");
                 var historyItems = page.HistoryPanel.GetAllHistoryListViewItems();
                 Assert.IsTrue(historyItems[0].GetValue().Equals("6", StringComparison.InvariantCultureIgnoreCase));
                 Assert.IsTrue(historyItems[0].GetExpression().Equals("3 + 3=", StringComparison.InvariantCultureIgnoreCase));
@@ -726,34 +740,20 @@ namespace CalculatorUITests
 
         [TestMethod]
         [Priority(2)]
-        public void AoT_ButtonOnlyInStandard()
+        public void AoT_ButtonInStandard()
         {
-            page.NavigationMenu.ChangeCalculatorMode(CalculatorMode.ScientificCalculator);
-            Assert.AreEqual("Scientific", CalculatorApp.GetCalculatorHeaderText());
-            Assert.IsFalse(page.StandardAoTCalculatorPage.IsKeepOnTopButtonPresent());
-
-            CalculatorApp.EnsureCalculatorHasFocus();
-            page.NavigationMenu.ChangeCalculatorMode(CalculatorMode.ProgrammerCalculator);
-            Assert.AreEqual("Programmer", CalculatorApp.GetCalculatorHeaderText());
-            Assert.IsFalse(page.StandardAoTCalculatorPage.IsKeepOnTopButtonPresent());
-
-            CalculatorApp.EnsureCalculatorHasFocus();
-            page.NavigationMenu.ChangeCalculatorMode(CalculatorMode.DateCalculator);
-            Assert.AreEqual("Date calculation", CalculatorApp.GetCalculatorHeaderText());
-            Assert.IsFalse(page.StandardAoTCalculatorPage.IsKeepOnTopButtonPresent());
-
             CalculatorApp.EnsureCalculatorHasFocus();
             page.NavigationMenu.ChangeCalculatorMode(CalculatorMode.StandardCalculator);
             Assert.AreEqual("Standard", CalculatorApp.GetCalculatorHeaderText());
-            Assert.IsTrue(page.StandardAoTCalculatorPage.IsKeepOnTopButtonPresent());
+            Assert.IsTrue(page.AoTCalculatorPage.IsKeepOnTopButtonPresent());
         }
 
         [TestMethod]
         [Priority(2)]
         public void AoT_ErrorMessage_ResultUndefined()
         {
-            page.StandardAoTCalculatorPage.NavigateToStandardAoTMode();
-            Assert.IsTrue(page.StandardAoTCalculatorPage.IsInAlwaysOnTopMode());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
 
             page.StandardOperators.DivideButton.Click();
             page.StandardOperators.NumberPad.Num0Button.Click();
@@ -765,9 +765,9 @@ namespace CalculatorUITests
         [Priority(2)]
         public void AoT_ErrorMessage_CannotDivideByZero()
         {
-            page.StandardAoTCalculatorPage.NavigateToStandardAoTMode();
-            Assert.IsTrue(page.StandardAoTCalculatorPage.IsInAlwaysOnTopMode());
-            page.StandardAoTCalculatorPage.ResizeAoTWindowToDisplayInvertButton();
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+            page.AoTCalculatorPage.ResizeAoTWindowToDisplayInvertButton();
 
             page.StandardOperators.ClearButton.Click();
             page.StandardOperators.InvertButton.Click();
@@ -778,16 +778,16 @@ namespace CalculatorUITests
         [Priority(2)]
         public void AoT_ErrorMessage_MessageRetentionUponExitingAoT()
         {
-            page.StandardAoTCalculatorPage.NavigateToStandardAoTMode();
-            Assert.IsTrue(page.StandardAoTCalculatorPage.IsInAlwaysOnTopMode());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
 
             page.StandardOperators.DivideButton.Click();
             page.StandardOperators.NumberPad.Num0Button.Click();
             page.StandardOperators.EqualButton.Click();
             Assert.AreEqual("Result is undefined", page.CalculatorResults.GetAoTCalculatorResultText());
 
-            page.StandardAoTCalculatorPage.NavigateToStandardMode();
-            Assert.IsFalse(page.StandardAoTCalculatorPage.IsInAlwaysOnTopMode());
+            page.AoTCalculatorPage.NavigateToFullViewMode("Standard");
+            Assert.IsFalse(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
             Assert.AreEqual("Result is undefined", page.CalculatorResults.GetCalculatorResultText());
         }
 

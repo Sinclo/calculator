@@ -8,13 +8,14 @@ using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
 using System.Drawing;
+using System.Threading;
 
 namespace CalculatorUITestFramework
 {
     /// <summary>
-    /// This class contains the UI automation objects and helper methods available when the Calculator is in Standard / AoT Mode.
+    /// UI automation helpers shared across all calculator modes for Always-on-Top (AoT) interactions.
     /// </summary>
-    public class StandardAoTCalculatorPage
+    public class AoTCalculatorPage
     {
         public StandardOperatorsPanel StandardOperators = new StandardOperatorsPanel();
         public NavigationMenu NavigationMenu = new NavigationMenu();
@@ -24,57 +25,49 @@ namespace CalculatorUITestFramework
 
         private WindowsDriver<WindowsElement> session => CalculatorDriver.Instance.CalculatorSession;
 
-        ///// <summary>
-        ///// Navigates from AoT(Keep on top) to Standard
-        ///// </summary>
-        public void NavigateToStandardMode()
-        {
-            string source = session.PageSource;
-            if (source.Contains("ExitAlwaysOnTopButton"))
-            {
-                ExitAlwaysOnTopButton.Click();
-                Assert.AreEqual("Standard", CalculatorApp.GetCalculatorHeaderText());
-            }
-            else
-            {
-                source = session.PageSource;
-                if (source.Contains("NormalAlwaysOnTopButton"))
-                {
-                    return;
-                }
-                else
-                {
-                    throw new NotFoundException("Could not find the 'Keep on top' button");
-                }
-            }
-        }
-
-        ///// <summary>
-        ///// Ensures the calculator is in AoT(Keep on top) mode, and verifies that the AoT mode through the absence of the header
-        ///// </summary>
-        public void NavigateToStandardAoTMode()
+        /// <summary>
+        /// Enters AoT (Keep on top) mode and verifies that the header is hidden.
+        /// </summary>
+        public void NavigateToAoTMode()
         {
             string source = session.PageSource;
             if (source.Contains("NormalAlwaysOnTopButton"))
             {
                 EnterAlwaysOnTopButton.Click();
                 ExitAlwaysOnTopButton.WaitForDisplayed();
-                source = CalculatorDriver.Instance.CalculatorSession.PageSource;
-                if (source.Contains("Header"))
-                {
-                    throw new NotFoundException("Failed to enter 'Keep on top' mode; In AoT mode, Calculator does not have header");
-                }
             }
         }
 
-        ///// <summary>
-        ///// Gets the AoT ToolTip text
-        ///// </summary>
+        /// <summary>
+        /// Exits AoT (Keep on top) mode. Pass expectedHeader to assert the calculator returned to the correct mode.
+        /// </summary>
+        public void NavigateToFullViewMode(string expectedHeader = null)
+        {
+            string source = session.PageSource;
+            if (source.Contains("ExitAlwaysOnTopButton"))
+            {
+                ExitAlwaysOnTopButton.Click();
+                // Poll page source rather than calling EnterAlwaysOnTopButton.WaitForDisplayed(),
+                // because the property getter throws if the element is temporarily absent from the
+                // UIA tree during the compact-overlay-to-full-view transition.
+                for (int i = 0; i < 40 && !session.PageSource.Contains("NormalAlwaysOnTopButton"); i++)
+                    Thread.Sleep(50);
+                if (expectedHeader != null)
+                    Assert.AreEqual(expectedHeader, CalculatorApp.GetCalculatorHeaderText());
+            }
+        }
+
+        /// <summary>
+        /// Gets the AoT ToolTip text
+        /// </summary>
         public string GetAoTToolTipText()
         {
             string source = session.PageSource;
             if ((source.Contains("Keep on top")) || (source.Contains("Back to full view")))
             {
+                // Allow the AoT transition animation to settle before hovering, so the tooltip triggers reliably.
+                Thread.Sleep(1500);
+
                 if (source.Contains("Keep on top"))
                 {
                     Actions moveToAoTButton = new Actions(CalculatorDriver.Instance.CalculatorSession);
@@ -92,11 +85,12 @@ namespace CalculatorUITestFramework
             {
                 throw new NotFoundException("Could not find 'Keep on top' button or 'Back to full view' button");
             }
+            Thread.Sleep(500); // wait for the tooltip popup to appear after the hover
             return ToolTip.Text;
         }
 
         /// <summary>
-        /// Checks in AoT (Keep on top) button is present
+        /// Checks if the AoT (Keep on top) button is present
         /// </summary>
         public bool IsKeepOnTopButtonPresent()
         {
@@ -105,24 +99,16 @@ namespace CalculatorUITestFramework
         }
 
         /// <summary>
-        /// Checks Standard calculator to see if it's in AoT (Keep on top)
+        /// Returns true when the calculator is in AoT (Keep on top) mode
         /// </summary>
         public bool IsInAlwaysOnTopMode()
         {
-            string source = session.PageSource;
-            if ((source.Contains("Keep on top")) && (source.Contains("Header")))
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return session.PageSource.Contains("ExitAlwaysOnTopButton");
         }
 
         /// <summary>
-        /// If the Invert button is not displayed, resize the window
-        /// Two attempts are made, the the button is not found a "not found" exception is thrown
+        /// If the Invert button is not displayed, resize the window.
+        /// Two attempts are made; if the button is not found a "not found" exception is thrown.
         /// </summary>
         public void ResizeAoTWindowToDisplayInvertButton()
         {
@@ -132,7 +118,7 @@ namespace CalculatorUITestFramework
         }
 
         /// <summary>
-        /// Increases the height of the window until invert button is visible
+        /// Increases the height of the window until the invert button is visible
         /// </summary>
         private void GrowWindowToShowInvertButton(int height)
         {
@@ -146,7 +132,7 @@ namespace CalculatorUITestFramework
                 var width = CalculatorDriver.Instance.CalculatorSession.Manage().Window.Size.Width;
                 CalculatorDriver.Instance.CalculatorSession.Manage().Window.Size = new Size(width, height);
                 //give window time to render new size
-                System.Threading.Thread.Sleep(10);
+                Thread.Sleep(10);
                 GrowWindowToShowInvertButton(height + 100);
             }
         }

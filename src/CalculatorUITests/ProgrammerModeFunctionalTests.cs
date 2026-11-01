@@ -923,5 +923,50 @@ namespace CalculatorUITests
             Assert.AreEqual("Invalid input", page.CalculatorResults.GetCalculatorResultText());
         }
         #endregion
+
+        #region AlwaysOnTop tests
+
+        [TestMethod]
+        [Priority(2)]
+        public void AoT_ButtonInProgrammer()
+        {
+            CalculatorApp.EnsureCalculatorHasFocus();
+            page.NavigationMenu.ChangeCalculatorMode(CalculatorMode.ProgrammerCalculator);
+            Assert.AreEqual("Programmer", CalculatorApp.GetCalculatorHeaderText());
+            Assert.IsTrue(page.AoTCalculatorPage.IsKeepOnTopButtonPresent());
+        }
+
+        [TestMethod]
+        [Priority(0)]
+        public void AoT_EnterExitKeepOnTop()
+        {
+            Assert.IsTrue(page.AoTCalculatorPage.IsKeepOnTopButtonPresent());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+        }
+
+        [TestMethod]
+        [Priority(1)]
+        public void AoT_HotkeyEnterExit()
+        {
+            CalculatorApp.EnsureCalculatorHasFocus();
+            CalculatorApp.Window.SendKeys(Keys.Alt + Keys.ArrowUp + Keys.Alt);
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+
+            CalculatorApp.Window.SendKeys(Keys.Alt + Keys.ArrowDown + Keys.Alt);
+            Assert.IsFalse(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+            Assert.AreEqual("Programmer", CalculatorApp.GetCalculatorHeaderText());
+        }
+
+        [TestMethod]
+        [Priority(1)]
+        public void AoT_Tooltip()
+        {
+            Assert.AreEqual("Keep on top (Alt+Up)", page.AoTCalculatorPage.GetAoTToolTipText());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.AreEqual("Back to full view (Alt+Down)", page.AoTCalculatorPage.GetAoTToolTipText());
+        }
+
+        #endregion
     }
 }

@@ -14,7 +14,7 @@ namespace CalculatorUITestFramework
         public MemoryPanel MemoryPanel = new MemoryPanel();
         public HistoryPanel HistoryPanel = new HistoryPanel();
         public NavigationMenu NavigationMenu = new NavigationMenu();
-        public StandardAoTCalculatorPage StandardAoTCalculatorPage = new StandardAoTCalculatorPage();
+        public AoTCalculatorPage AoTCalculatorPage = new AoTCalculatorPage();
         public CalculatorResults CalculatorResults = new CalculatorResults();
 
         private WindowsDriver<WindowsElement> session => CalculatorDriver.Instance.CalculatorSession;
@@ -34,7 +34,7 @@ namespace CalculatorUITestFramework
         /// </summary>
         public void ClearAll()
         {
-            StandardAoTCalculatorPage.NavigateToStandardMode();
+            AoTCalculatorPage.NavigateToFullViewMode("Standard");
             MemoryPanel.ResizeWindowToDisplayMemoryLabel();
             StandardOperators.ClearButton.Click();
             MemoryPanel.NumberpadMCButton.Click();
@@ -72,7 +72,7 @@ namespace CalculatorUITestFramework
             }
             else
             {
-                StandardAoTCalculatorPage.NavigateToStandardMode();
+                AoTCalculatorPage.NavigateToFullViewMode("Standard");
             }
         }
 

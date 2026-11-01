@@ -435,7 +435,7 @@
             </VisualStateGroup>
             <!-- Always-on-Top specific -->
             <VisualStateGroup x:Name="DisplayModeVisualStates">
-                <VisualState x:Name="DisplayModeAlwaysOnTop">
+                <VisualState x:Name="DisplayModeAlwaysOnTopCompact">
                     <VisualState.Setters>
                         <Setter Target="ClearMemoryButton.IsEnabled" Value="False"/>
                         <Setter Target="MemRecall.IsEnabled" Value="False"/>
@@ -445,6 +445,12 @@
                         <Setter Target="RowExpression.Height" Value="0*"/>
                         <Setter Target="RowHamburger.Height" Value="0"/>
                         <Setter Target="RowMemoryControls.Height" Value="0*"/>
+                    </VisualState.Setters>
+                    <Storyboard Completed="OnDisplayVisualStateCompleted"/>
+                </VisualState>
+                <VisualState x:Name="DisplayModeAlwaysOnTopExpanded">
+                    <VisualState.Setters>
+                        <Setter Target="RowHamburger.Height" Value="0"/>
                     </VisualState.Setters>
                     <Storyboard Completed="OnDisplayVisualStateCompleted"/>
                 </VisualState>
@@ -629,7 +635,7 @@
                                         AutomationProperties.Name="{x:Bind local:Calculator.OrEmpty(ViewModel.CalculationExpressionAutomationName), Mode=OneWay}"
                                         IsTabStop="False"
                                         TokensUpdated="{x:Bind ViewModel.AreTokensUpdated, Mode=OneWay}"
-                                        Visibility="{x:Bind ViewModel.IsAlwaysOnTop, Converter={StaticResource BooleanToVisibilityNegationConverter}, Mode=OneWay}"/>
+                                        Visibility="{x:Bind local:Calculator.ShouldShowCalcDetails(ViewModel.IsAlwaysOnTop, ViewModel.IsScientific, ViewModel.IsProgrammer), Mode=OneWay}"/>
             <controls:CalculationResult x:Name="Results"
                                         x:Uid="CalculatorResults"
                                         Grid.Row="2"
@@ -721,7 +727,7 @@
                   Margin="3,0,3,0"
                   AutomationProperties.HeadingLevel="Level1"
                   AutomationProperties.Name="{utils:ResourceString Name=MemoryPanel/[using:Windows.UI.Xaml.Automation]AutomationProperties/Name}"
-                  Visibility="{x:Bind ViewModel.IsAlwaysOnTop, Converter={StaticResource BooleanToVisibilityNegationConverter}, Mode=OneWay}">
+                  Visibility="{x:Bind local:Calculator.ShouldShowCalcDetails(ViewModel.IsAlwaysOnTop, ViewModel.IsScientific, ViewModel.IsProgrammer), Mode=OneWay}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" MaxWidth="80"/>
                     <ColumnDefinition Width="1*" MaxWidth="80"/>

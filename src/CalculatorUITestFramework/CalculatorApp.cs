@@ -14,7 +14,7 @@ namespace CalculatorUITestFramework
     {
         public static WindowsElement Window => session.FindElementByClassName("Windows.UI.Core.CoreWindow");
 
-        internal static WindowsElement Header => session.TryFindElementByAccessibilityId("Header");
+        public static WindowsElement Header => session.TryFindElementByAccessibilityId("Header");
 
         private static WindowsDriver<WindowsElement> session => CalculatorDriver.Instance.CalculatorSession;
         private static WindowsElement AppName => session.TryFindElementByAccessibilityId("AppName");

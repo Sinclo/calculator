@@ -1129,7 +1129,7 @@ namespace CalculatorApp.ViewModel
                     memorySlot.Value = stringValue;
 
                     MemorizedNumbers.Insert(0, memorySlot);
-                    IsMemoryEmpty = IsAlwaysOnTop;
+                    IsMemoryEmpty = IsAlwaysOnTop && !IsScientific && !IsProgrammer;
 
                     for (int i = 1; i < MemorizedNumbers.Count; i++)
                     {

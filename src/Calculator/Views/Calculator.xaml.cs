@@ -245,6 +245,11 @@ namespace CalculatorApp
             return !isAlwaysOnTop && !isProgrammer && dockPanelVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        public static Visibility ShouldShowCalcDetails(bool isAlwaysOnTop, bool isScientific, bool isProgrammer)
+        {
+            return !isAlwaysOnTop || isScientific || isProgrammer ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             ViewModel.PropertyChanged += OnCalcPropertyChanged;
@@ -316,7 +321,7 @@ namespace CalculatorApp
 
         private void UpdateMemoryState()
         {
-            if (!IsAlwaysOnTop)
+            if (!IsAlwaysOnTop || IsScientific || IsProgrammer)
             {
                 if (!ViewModel.IsMemoryEmpty)
                 {
@@ -436,7 +441,8 @@ namespace CalculatorApp
         {
             if (newValue)
             {
-                VisualStateManager.GoToState(this, "DisplayModeAlwaysOnTop", false);
+                string state = (IsScientific || IsProgrammer) ? "DisplayModeAlwaysOnTopExpanded" : "DisplayModeAlwaysOnTopCompact";
+                VisualStateManager.GoToState(this, state, false);
                 AlwaysOnTopResults.UpdateScrollButtons();
             }
             else
@@ -449,7 +455,7 @@ namespace CalculatorApp
                 Results.UpdateTextState();
             }
 
-            ViewModel.IsMemoryEmpty = (ViewModel.MemorizedNumbers.Count == 0) || IsAlwaysOnTop;
+            ViewModel.IsMemoryEmpty = (ViewModel.MemorizedNumbers.Count == 0) || (IsAlwaysOnTop && !IsScientific && !IsProgrammer);
 
             UpdateViewState();
             UpdatePanelViewState();

@@ -48,8 +48,15 @@ namespace CalculatorApp.ViewModel
         [ObservableProperty]
         private IList<NavCategoryGroup> _categories = NavCategoryStates.CreateMenuOptions();
 
+        private const string LaunchedSettingsKey = "calculatorAlwaysOnTopLaunched";
         public const string WidthLocalSettingsKey = "calculatorAlwaysOnTopLastWidth";
         public const string HeightLocalSettingsKey = "calculatorAlwaysOnTopLastHeight";
+        private const string ScientificLaunchedSettingsKey = "calculatorAlwaysOnTopLaunched_Scientific";
+        private const string ScientificWidthSettingsKey = "calculatorAlwaysOnTopLastWidth_Scientific";
+        private const string ScientificHeightSettingsKey = "calculatorAlwaysOnTopLastHeight_Scientific";
+        private const string ProgrammerLaunchedSettingsKey = "calculatorAlwaysOnTopLaunched_Programmer";
+        private const string ProgrammerWidthSettingsKey = "calculatorAlwaysOnTopLastWidth_Programmer";
+        private const string ProgrammerHeightSettingsKey = "calculatorAlwaysOnTopLastHeight_Programmer";
 
         public ViewMode Mode
         {
@@ -103,31 +110,50 @@ namespace CalculatorApp.ViewModel
         public async Task ToggleAlwaysOnTop(double width, double height)
         {
             var DefaultSize = new Size(320, 394);
-            const string LaunchedSettingsKey = "calculatorAlwaysOnTopLaunched";
+            string launchedKey = LaunchedSettingsKey;
+            string widthKey = WidthLocalSettingsKey;
+            string heightKey = HeightLocalSettingsKey;
+            if (_mode == ViewMode.Scientific)
+            {
+                DefaultSize = new Size(320, 460);
+                launchedKey = ScientificLaunchedSettingsKey;
+                widthKey = ScientificWidthSettingsKey;
+                heightKey = ScientificHeightSettingsKey;
+            }
+            else if (_mode == ViewMode.Programmer)
+            {
+                DefaultSize = new Size(320, 520);
+                launchedKey = ProgrammerLaunchedSettingsKey;
+                widthKey = ProgrammerWidthSettingsKey;
+                heightKey = ProgrammerHeightSettingsKey;
+            }
             var settings = ApplicationData.Current.LocalSettings;
             if (ApplicationView.GetForCurrentView().ViewMode == ApplicationViewMode.CompactOverlay)
             {
-                settings.Values[WidthLocalSettingsKey] = width;
-                settings.Values[HeightLocalSettingsKey] = height;
+                settings.Values[widthKey] = width;
+                settings.Values[heightKey] = height;
                 bool success = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.Default);
-                CalculatorViewModel.HistoryVM.AreHistoryShortcutsEnabled = success;
-                CalculatorViewModel.IsAlwaysOnTop = !success;
+                if (CalculatorViewModel != null)
+                {
+                    CalculatorViewModel.HistoryVM.AreHistoryShortcutsEnabled = success;
+                    CalculatorViewModel.IsAlwaysOnTop = !success;
+                }
                 IsAlwaysOnTop = !success;
             }
             else
             {
                 var compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
-                if (!settings.Values.ContainsKey(LaunchedSettingsKey))
+                if (!settings.Values.ContainsKey(launchedKey))
                 {
                     compactOptions.CustomSize = DefaultSize;
-                    settings.Values[LaunchedSettingsKey] = true;
+                    settings.Values[launchedKey] = true;
                 }
                 else
                 {
                     try
                     {
-                        if (settings.Values.TryGetValue(WidthLocalSettingsKey, out var oldWidth) &&
-                            settings.Values.TryGetValue(HeightLocalSettingsKey, out var oldHeight))
+                        if (settings.Values.TryGetValue(widthKey, out var oldWidth) &&
+                            settings.Values.TryGetValue(heightKey, out var oldHeight))
                         {
                             compactOptions.CustomSize = new Size((double)oldWidth, (double)oldHeight);
                         }
@@ -142,8 +168,11 @@ namespace CalculatorApp.ViewModel
                     }
                 }
                 bool success = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.CompactOverlay, compactOptions);
-                CalculatorViewModel.HistoryVM.AreHistoryShortcutsEnabled = !success;
-                CalculatorViewModel.IsAlwaysOnTop = success;
+                if (CalculatorViewModel != null)
+                {
+                    CalculatorViewModel.HistoryVM.AreHistoryShortcutsEnabled = !success;
+                    CalculatorViewModel.IsAlwaysOnTop = success;
+                }
                 IsAlwaysOnTop = success;
             }
             SetDisplayNormalAlwaysOnTopOption();
@@ -303,7 +332,10 @@ namespace CalculatorApp.ViewModel
 
         private void SetDisplayNormalAlwaysOnTopOption()
         {
-            DisplayNormalAlwaysOnTopOption = _mode == ViewMode.Standard &&
+            DisplayNormalAlwaysOnTopOption =
+                (NavCategory.IsCalculatorViewMode(_mode) ||
+                 NavCategory.IsGraphingCalculatorViewMode(_mode) ||
+                 NavCategory.IsDateCalculatorViewMode(_mode)) &&
                 ApplicationView.GetForCurrentView().IsViewModeSupported(ApplicationViewMode.CompactOverlay) &&
                 !_isAlwaysOnTop;
         }
