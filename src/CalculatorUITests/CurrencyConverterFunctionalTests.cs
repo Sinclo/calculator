@@ -3,6 +3,7 @@
 using CalculatorUITestFramework;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 
 namespace CalculatorUITests
 {
@@ -293,6 +294,53 @@ namespace CalculatorUITests
 
             Assert.AreEqual("200", page.UnitConverterResults.GetCalculationResult1Text());
             Assert.AreEqual(result, page.UnitConverterResults.GetCalculationResult2Text());
+        }
+
+        #endregion
+
+        #region AlwaysOnTop tests
+
+        [TestMethod]
+        [Priority(2)]
+        public void AoT_ButtonInCurrency()
+        {
+            CalculatorApp.EnsureCalculatorHasFocus();
+            page.NavigationMenu.ChangeCalculatorMode(CalculatorMode.Currency);
+            Assert.AreEqual("Currency", CalculatorApp.GetCalculatorHeaderText());
+            Assert.IsTrue(page.AoTCalculatorPage.IsKeepOnTopButtonPresent());
+        }
+
+        [TestMethod]
+        [Priority(0)]
+        public void AoT_EnterExitKeepOnTop()
+        {
+            Assert.IsTrue(page.AoTCalculatorPage.IsKeepOnTopButtonPresent());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+        }
+
+        [TestMethod]
+        [Priority(1)]
+        public void AoT_HotkeyEnterExit()
+        {
+            // Click the non-focusable Header TextBlock to move keyboard focus away from
+            // the Units ComboBoxes, which intercept Alt+Up/Down for their own navigation.
+            CalculatorApp.Header.Click();
+            CalculatorApp.Window.SendKeys(Keys.Alt + Keys.ArrowUp + Keys.Alt);
+            Assert.IsTrue(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+
+            CalculatorApp.Window.SendKeys(Keys.Alt + Keys.ArrowDown + Keys.Alt);
+            Assert.IsFalse(page.AoTCalculatorPage.IsInAlwaysOnTopMode());
+            Assert.AreEqual("Currency", CalculatorApp.GetCalculatorHeaderText());
+        }
+
+        [TestMethod]
+        [Priority(1)]
+        public void AoT_Tooltip()
+        {
+            Assert.AreEqual("Keep on top (Alt+Up)", page.AoTCalculatorPage.GetAoTToolTipText());
+            page.AoTCalculatorPage.NavigateToAoTMode();
+            Assert.AreEqual("Back to full view (Alt+Down)", page.AoTCalculatorPage.GetAoTToolTipText());
         }
 
         #endregion

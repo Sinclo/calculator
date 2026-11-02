@@ -57,6 +57,9 @@ namespace CalculatorApp.ViewModel
         private const string ProgrammerLaunchedSettingsKey = "calculatorAlwaysOnTopLaunched_Programmer";
         private const string ProgrammerWidthSettingsKey = "calculatorAlwaysOnTopLastWidth_Programmer";
         private const string ProgrammerHeightSettingsKey = "calculatorAlwaysOnTopLastHeight_Programmer";
+        private const string ConverterLaunchedSettingsKey = "calculatorAlwaysOnTopLaunched_Converter";
+        private const string ConverterWidthSettingsKey = "calculatorAlwaysOnTopLastWidth_Converter";
+        private const string ConverterHeightSettingsKey = "calculatorAlwaysOnTopLastHeight_Converter";
 
         public ViewMode Mode
         {
@@ -126,6 +129,13 @@ namespace CalculatorApp.ViewModel
                 launchedKey = ProgrammerLaunchedSettingsKey;
                 widthKey = ProgrammerWidthSettingsKey;
                 heightKey = ProgrammerHeightSettingsKey;
+            }
+            else if (NavCategory.IsConverterViewMode(_mode))
+            {
+                DefaultSize = new Size(320, 500);
+                launchedKey = ConverterLaunchedSettingsKey;
+                widthKey = ConverterWidthSettingsKey;
+                heightKey = ConverterHeightSettingsKey;
             }
             var settings = ApplicationData.Current.LocalSettings;
             if (ApplicationView.GetForCurrentView().ViewMode == ApplicationViewMode.CompactOverlay)
@@ -335,7 +345,8 @@ namespace CalculatorApp.ViewModel
             DisplayNormalAlwaysOnTopOption =
                 (NavCategory.IsCalculatorViewMode(_mode) ||
                  NavCategory.IsGraphingCalculatorViewMode(_mode) ||
-                 NavCategory.IsDateCalculatorViewMode(_mode)) &&
+                 NavCategory.IsDateCalculatorViewMode(_mode) ||
+                 NavCategory.IsConverterViewMode(_mode)) &&
                 ApplicationView.GetForCurrentView().IsViewModeSupported(ApplicationViewMode.CompactOverlay) &&
                 !_isAlwaysOnTop;
         }

@@ -9,6 +9,7 @@ namespace CalculatorUITestFramework
         public UnitConverterOperatorsPanel UnitConverterOperators = new UnitConverterOperatorsPanel();
         public NavigationMenu NavigationMenu = new NavigationMenu();
         public UnitConverterResults UnitConverterResults = new UnitConverterResults();
+        public AoTCalculatorPage AoTCalculatorPage = new AoTCalculatorPage();
 
         private WindowsDriver<WindowsElement> session => CalculatorDriver.Instance.CalculatorSession;
 
@@ -17,6 +18,7 @@ namespace CalculatorUITestFramework
         /// </summary>
         public void ClearAll()
         {
+            AoTCalculatorPage.NavigateToFullViewMode();
             UnitConverterOperators.ClearButton.Click();
         }
 
